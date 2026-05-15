@@ -118,3 +118,63 @@ GO
  
 SELECT * FROM clientes;
 GO
+
+
+
+DECLARE @oi        INT = 1;
+DECLARE @cli_count INT = (SELECT COUNT(*) FROM clientes);
+DECLARE @pro_count INT = (SELECT COUNT(*) FROM productos);
+DECLARE @estados   TABLE (idx INT IDENTITY, val NVARCHAR(30));
+ 
+INSERT INTO @estados VALUES ('pendiente'),('confirmada'),('procesando'),
+                             ('enviada'),('entregada'),('cancelada');
+ 
+DECLARE @estado_cnt INT = (SELECT COUNT(*) FROM @estados);
+ 
+WHILE @oi <= 5000
+BEGIN
+    DECLARE @cli_id  INT      = CAST(RAND(CHECKSUM(NEWID())) * @cli_count AS INT) + 1;
+    DECLARE @est_val NVARCHAR(30) = (SELECT val FROM @estados
+                                     WHERE idx = CAST(RAND(CHECKSUM(NEWID())) * @estado_cnt AS INT) + 1);
+    DECLARE @fec_ord DATETIME2 = DATEADD(MINUTE,
+                                    -CAST(RAND(CHECKSUM(NEWID())) * 525600 AS INT),
+                                    SYSUTCDATETIME());
+ 
+    INSERT INTO ordenes (cliente_id, fecha, estado, subtotal, impuestos, total)
+    VALUES (@cli_id, @fec_ord, @est_val, 0, 0, 0);
+ 
+    DECLARE @ord_id INT = SCOPE_IDENTITY();
+ 
+    DECLARE @lineas INT = CAST(RAND(CHECKSUM(NEWID())) * 4 AS INT) + 2;
+    DECLARE @li     INT = 1;
+    DECLARE @sub_total DECIMAL(12,2) = 0;
+ 
+    WHILE @li <= @lineas
+    BEGIN
+        DECLARE @prod_id  INT            = CAST(RAND(CHECKSUM(NEWID())) * @pro_count AS INT) + 1;
+        DECLARE @qty      INT            = CAST(RAND(CHECKSUM(NEWID())) * 9 AS INT) + 1;
+        DECLARE @p_unit   DECIMAL(10,2)  = (SELECT precio FROM productos WHERE id = @prod_id);
+        DECLARE @lin_sub  DECIMAL(12,2)  = @qty * @p_unit;
+ 
+        INSERT INTO detalle_orden (orden_id, producto_id, cantidad, precio_unitario, subtotal)
+        VALUES (@ord_id, @prod_id, @qty, @p_unit, @lin_sub);
+ 
+        SET @sub_total += @lin_sub;
+        SET @li += 1;
+    END
+ 
+    DECLARE @imp   DECIMAL(12,2) = ROUND(@sub_total * 0.16, 2);
+    DECLARE @tot   DECIMAL(12,2) = @sub_total + @imp;
+ 
+    UPDATE ordenes
+    SET subtotal = @sub_total, impuestos = @imp, total = @tot
+    WHERE id = @ord_id;
+ 
+    SET @oi += 1;
+END
+GO
+ 
+SELECT * FROM ordenes;
+GO
+SELECT * FROM detalle_orden;
+GO
