@@ -178,3 +178,25 @@ SELECT * FROM ordenes;
 GO
 SELECT * FROM detalle_orden;
 GO
+
+DECLARE @metodos TABLE (idx INT IDENTITY, val NVARCHAR(50));
+INSERT INTO @metodos VALUES ('TDC'),('TDD'),
+                             ('paypal'),('transferencia'),('efectivo');
+DECLARE @met_cnt INT = (SELECT COUNT(*) FROM @metodos);
+ 
+DECLARE @pag_estados TABLE (idx INT IDENTITY, val NVARCHAR(30));
+INSERT INTO @pag_estados VALUES ('completado'),('completado'),('completado'),
+                                 ('fallido'),('pendiente'),('procesando');
+DECLARE @pest_cnt INT = (SELECT COUNT(*) FROM @pag_estados);
+ 
+INSERT INTO pagos (orden_id, metodo, monto, fecha, estado)
+SELECT
+    o.id,
+    (SELECT val FROM @metodos WHERE idx = (ABS(CHECKSUM(NEWID())) % @met_cnt) + 1),
+    o.total,
+    DATEADD(MINUTE, CAST(RAND(CHECKSUM(NEWID())) * 1440 AS INT), o.fecha),
+    (SELECT val FROM @pag_estados WHERE idx = (ABS(CHECKSUM(NEWID())) % @pest_cnt) + 1)
+FROM ordenes o
+WHERE o.id <= 5000;
+GO
+
