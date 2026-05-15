@@ -45,7 +45,7 @@ DECLARE @cat_names TABLE (id INT, nombre NVARCHAR(100));
 INSERT INTO @cat_names
 SELECT id, nombre FROM categorias;
  
-WHILE @i <= 600
+WHILE @i <= 5000
 BEGIN
     SET @catId  = ((@i - 1) % 20) + 1;
     SET @sku    = N'SKU-' + RIGHT('0000' + CAST(@i AS NVARCHAR), 4);
