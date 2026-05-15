@@ -75,5 +75,46 @@ SELECT * FROM productos;
 GO
  
 
+SELECT * FROM clientes;
+GO
 
 
+DECLARE @nombres  NVARCHAR(MAX) = N'Carlos,María,José,Ana,Luis,Laura,Miguel,Sofía,Jorge,Elena,Pedro,Carmen,Andrés,Lucía,Roberto,Isabel,Francisco,Diana,Alejandro,Valentina,Valeria,Ariana';
+DECLARE @apellidos NVARCHAR(MAX) = N'García,Rodríguez,Martínez,López,González,Pérez,Sánchez,Ramírez,Torres,Flores,Rivera,Gómez,Díaz,Morales,Reyes,Cruz,Hernández,Jiménez,Ruiz,Vargas';
+DECLARE @ciudades  NVARCHAR(MAX) = N'CDMX,Guadalajara,Monterrey,Puebla,Tijuana,León,Juárez,Zapopan,Mérida,Querétaro,San Luis Potosí,Mexicali,Aguascalientes,Hermosillo,Chihuahua';
+ 
+DECLARE @n_arr  TABLE (idx INT IDENTITY, val NVARCHAR(100));
+DECLARE @a_arr  TABLE (idx INT IDENTITY, val NVARCHAR(100));
+DECLARE @c_arr  TABLE (idx INT IDENTITY, val NVARCHAR(100));
+ 
+INSERT INTO @n_arr (val) SELECT value FROM STRING_SPLIT(@nombres,   ',');
+INSERT INTO @a_arr (val) SELECT value FROM STRING_SPLIT(@apellidos, ',');
+INSERT INTO @c_arr (val) SELECT value FROM STRING_SPLIT(@ciudades,  ',');
+ 
+DECLARE @nc INT = (SELECT COUNT(*) FROM @n_arr);
+DECLARE @ac INT = (SELECT COUNT(*) FROM @a_arr);
+DECLARE @cc INT = (SELECT COUNT(*) FROM @c_arr);
+ 
+DECLARE @ci INT = 1;
+WHILE @ci <= 200
+BEGIN
+    DECLARE @nom  NVARCHAR(100) = (SELECT val FROM @n_arr  WHERE idx = ((@ci - 1) % @nc) + 1);
+    DECLARE @ape  NVARCHAR(100) = (SELECT val FROM @a_arr  WHERE idx = ((@ci - 1) % @ac) + 1);
+    DECLARE @ciu  NVARCHAR(100) = (SELECT val FROM @c_arr  WHERE idx = ((@ci - 1) % @cc) + 1);
+    DECLARE @correo NVARCHAR(200) = LOWER(@nom) + '.' + LOWER(@ape) + CAST(@ci AS NVARCHAR) + N'@correo.com';
+    DECLARE @tel  NVARCHAR(20) = N'+52 55 ' + RIGHT('0000' + CAST(CAST(RAND(CHECKSUM(NEWID()))*9999 AS INT) AS NVARCHAR),4)
+                                            + N' ' + RIGHT('0000' + CAST(CAST(RAND(CHECKSUM(NEWID()))*9999 AS INT) AS NVARCHAR),4);
+ 
+    INSERT INTO clientes (nombre, apellido, correo, telefono, fecha_registro, ciudad)
+    VALUES (
+        @nom, @ape, @correo, @tel,
+        DATEADD(DAY, -CAST(RAND(CHECKSUM(NEWID())) * 1095 AS INT), SYSUTCDATETIME()),
+        @ciu
+    );
+ 
+    SET @ci += 1;
+END
+GO
+ 
+SELECT * FROM clientes;
+GO
