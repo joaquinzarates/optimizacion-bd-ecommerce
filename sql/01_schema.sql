@@ -101,3 +101,27 @@ CREATE TABLE detalle_orden (
     CONSTRAINT CK_detalle_orden_subtotal  CHECK (subtotal        >= 0)
 );
 GO
+
+
+CREATE TABLE pagos (
+    id       INT             NOT NULL IDENTITY(1,1),
+    orden_id INT             NOT NULL,
+    metodo   NVARCHAR(50)    NOT NULL,
+    monto    DECIMAL(12, 2)  NOT NULL,
+    fecha    DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME(),
+    estado   NVARCHAR(30)    NOT NULL DEFAULT 'pendiente',
+ 
+    CONSTRAINT PK_pagos         PRIMARY KEY CLUSTERED (id),
+    CONSTRAINT FK_pagos_ordenes FOREIGN KEY (orden_id)
+        REFERENCES ordenes (id),
+    CONSTRAINT CK_pagos_metodo  CHECK (metodo IN (
+        'TDC', 'TDD', 'paypal',
+        'transferencia','efectivo'
+    )),
+    CONSTRAINT CK_pagos_estado  CHECK (estado IN (
+        'pendiente', 'procesando', 'completado',
+        'fallido', 'reembolsado'
+    )),
+    CONSTRAINT CK_pagos_monto   CHECK (monto > 0)
+);
+GO
