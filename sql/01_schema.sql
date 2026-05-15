@@ -15,3 +15,13 @@ GO
  
 USE bd_ecommerce;
 GO
+
+CREATE TABLE categorias (
+    id          INT             NOT NULL IDENTITY(1,1),
+    nombre      NVARCHAR(100)   NOT NULL,
+    descripcion NVARCHAR(500)   NULL,
+ 
+    CONSTRAINT PK_categorias PRIMARY KEY CLUSTERED (id),
+    CONSTRAINT UQ_categorias_nombre UNIQUE (nombre)
+);
+GO
