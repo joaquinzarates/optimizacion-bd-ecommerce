@@ -45,3 +45,19 @@ CREATE TABLE productos (
     CONSTRAINT CK_productos_stock      CHECK (stock  >= 0)
 );
 GO
+
+CREATE TABLE clientes (
+    id              INT             NOT NULL IDENTITY(1,1),
+    nombre          NVARCHAR(100)   NOT NULL,
+    apellido        NVARCHAR(100)   NOT NULL,
+    correo          NVARCHAR(200)   NOT NULL,
+    telefono        NVARCHAR(20)    NULL,
+    fecha_registro  DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME(),
+    ciudad          NVARCHAR(100)   NULL,
+ 
+    CONSTRAINT PK_clientes         PRIMARY KEY CLUSTERED (id),
+    CONSTRAINT UQ_clientes_correo  UNIQUE (correo)
+);
+GO
+
+
