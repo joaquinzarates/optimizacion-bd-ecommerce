@@ -61,3 +61,24 @@ CREATE TABLE clientes (
 GO
 
 
+CREATE TABLE ordenes (
+    id          INT             NOT NULL IDENTITY(1,1),
+    cliente_id  INT             NOT NULL,
+    fecha       DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME(),
+    estado      NVARCHAR(30)    NOT NULL DEFAULT 'pendiente',
+    subtotal    DECIMAL(12, 2)  NOT NULL,
+    impuestos   DECIMAL(12, 2)  NOT NULL,
+    total       DECIMAL(12, 2)  NOT NULL,
+ 
+    CONSTRAINT PK_ordenes         PRIMARY KEY CLUSTERED (id),
+    CONSTRAINT FK_ordenes_clientes FOREIGN KEY (cliente_id)
+        REFERENCES clientes (id),
+    CONSTRAINT CK_ordenes_estado   CHECK (estado IN (
+        'pendiente', 'confirmada', 'procesando',
+        'enviada', 'entregada', 'cancelada', 'reembolsada'
+    )),
+    CONSTRAINT CK_ordenes_subtotal CHECK (subtotal  >= 0),
+    CONSTRAINT CK_ordenes_impuesto CHECK (impuestos >= 0),
+    CONSTRAINT CK_ordenes_total    CHECK (total     >= 0)
+);
+GO
