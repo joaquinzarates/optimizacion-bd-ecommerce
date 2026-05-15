@@ -82,3 +82,22 @@ CREATE TABLE ordenes (
     CONSTRAINT CK_ordenes_total    CHECK (total     >= 0)
 );
 GO
+
+CREATE TABLE detalle_orden (
+    id              INT             NOT NULL IDENTITY(1,1),
+    orden_id        INT             NOT NULL,
+    producto_id     INT             NOT NULL,
+    cantidad        INT             NOT NULL,
+    precio_unitario DECIMAL(10, 2)  NOT NULL,
+    subtotal        DECIMAL(12, 2)  NOT NULL,
+ 
+    CONSTRAINT PK_detalle_orden           PRIMARY KEY CLUSTERED (id),
+    CONSTRAINT FK_detalle_orden_ordenes   FOREIGN KEY (orden_id)
+        REFERENCES ordenes (id),
+    CONSTRAINT FK_detalle_orden_productos FOREIGN KEY (producto_id)
+        REFERENCES productos (id),
+    CONSTRAINT CK_detalle_orden_cantidad  CHECK (cantidad        > 0),
+    CONSTRAINT CK_detalle_orden_precio    CHECK (precio_unitario >= 0),
+    CONSTRAINT CK_detalle_orden_subtotal  CHECK (subtotal        >= 0)
+);
+GO
