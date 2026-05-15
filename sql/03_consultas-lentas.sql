@@ -1,0 +1,6 @@
+use bd_ecommerce;
+GO
+
+SET STATISTICS IO  ON;
+SET STATISTICS TIME ON;
+GO
