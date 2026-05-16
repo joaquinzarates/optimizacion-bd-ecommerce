@@ -99,7 +99,7 @@ optimizacion-bd-ecommerce/
 | `productos` | Artículos disponibles para venta | 5 000 |
 | `clientes` | Compradores registrados | 200 |
 | `ordenes` | Cabecera de cada transacción | 5 000 |
-| `detalle_orden` | Líneas de producto por orden | ~17 000 |
+| `detalle_orden` | Líneas de producto por orden | mayor a 17 000 |
 | `pagos` | Transacciones de cobro | 5 000 |
 
 ### Limpiar y reiniciar datos
