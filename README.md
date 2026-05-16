@@ -220,13 +220,13 @@ EXEC usp_top_productos
 ---
 
 ### Consulta #1 
-| Métrica | Antes | Después | Δ |
+| Métrica | Antes | Después | % de mejora |
 |---|---|---|---|
 | CPU (ms) | 93 | 31 | **−67 %** |
 | Elapsed (ms) | 307 | 70 | **−77 %** |
 | Logical reads productos | 17 535 | 3 532 | **−80 %** |
 | Logical reads total | 17 535 | 3 532 | **−80 %** |
-| Operación principal | Clustered Index Scan + Hash Match + Sort | Index Seek + Nested Loop | ✅ |
+
 
 ---
 
