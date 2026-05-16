@@ -75,7 +75,7 @@ BEGIN
     IF @fecha_fin IS NULL
         SET @fecha_fin = SYSUTCDATETIME();
     IF @top_n IS NULL OR @top_n < 1
-        SET @top_n = 2147483647;   -- Sin límite efectivo
+        SET @top_n = 2147483647;  
 
     ;WITH ventas_cliente AS (
         SELECT
