@@ -29,13 +29,12 @@ Proyecto para validar los conocimientos obtenidos en el Track: Bases de Datos pa
 
 - Microsoft SQL Server 2019+ (Developer / Express / Docker)
 - SQL Server Management Studio (SSMS) 19+
-- Azure Data Studio 1.40+ *(alternativa)*
 - T-SQL — Window Functions, CTEs, Stored Procedures
 - Git / GitHub
 
 ---
 
-## Estructura del repositorio
+## Estructura del proyecto
 
 ```
 optimizacion-bd-ecommerce/
@@ -46,23 +45,14 @@ optimizacion-bd-ecommerce/
 ├── sql/
 │   ├── 01_schema.sql                     # DDL: base de datos y tablas
 │   ├── 02_seed.sql                       # Datos masivos de prueba
-│   ├── 03_consultas-lentas.sql           # 5 consultas con problemas de rendimiento
+│   ├── 03_consultas-lentas.sql           # consultas con problemas de rendimiento
 │   ├── 04_indices.sql                    # Definición de índices de optimización
 │   ├── 05_consultas-optimizadas.sql      # Consultas reescritas y optimizadas
-│   └── 06_stored_procedures.sql          # 3 stored procedures parametrizados
+│   └── 06_stored_procedures.sql          # stored procedures parametrizados
 ├── evidencias/
 │   ├── plan-ejecucion-antes-1.png
-│   ├── plan-ejecucion-antes-2.png
-│   ├── plan-ejecucion-antes-3.png
-│   ├── plan-ejecucion-antes-4.png
-│   ├── plan-ejecucion-antes-5.png
 │   ├── plan-ejecucion-despues-1.png
-│   ├── plan-ejecucion-despues-2.png
-│   ├── plan-ejecucion-despues-3.png
-│   ├── plan-ejecucion-despues-4.png
-│   ├── plan-ejecucion-despues-5.png
-│   ├── statistics-io-antes.png
-│   ├── statistics-io-despues.png
+│   ├── statistics-io-comparacion.png
 │   └── stored-procedures-pruebas.png
 └── README.md
 ```
@@ -77,40 +67,26 @@ optimizacion-bd-ecommerce/
 - SSMS 19+ o Azure Data Studio 1.40+
 - ~500 MB de espacio en disco
 
-### Opción Docker (sin instalación local)
-
-```bash
-docker run -e "ACCEPT_EULA=Y" \
-           -e "SA_PASSWORD=TuPassword123!" \
-           -p 1433:1433 \
-           --name sqlserver \
-           -d mcr.microsoft.com/mssql/server:2019-latest
-```
-
-Conexión: `localhost,1433` · Usuario: `sa` · Contraseña: `TuPassword123!`
-
 ### Pasos de ejecución
 
 > **El orden es obligatorio.** Cada script depende del anterior.
 
 ```
-1. Ejecutar sql/01_schema.sql  →  Crea ecommerce_db con las 6 tablas
-2. Ejecutar sql/02_seed.sql    →  Genera datos masivos (~3–8 min)
-3. Ejecutar sql/03_consultas-lentas.sql   →  Capturar métricas ANTES (Ctrl+M)
-4. Ejecutar sql/04_indices.sql            →  Crear los 11 índices
+1. Ejecutar sql/01_schema.sql  →  Creación de bd_ecommerce_alt con las 6 tablas
+2. Ejecutar sql/02_seed.sql    →  Generación de datos 
+3. Ejecutar sql/03_consultas-lentas.sql   →  Capturar métricas antes de la optimización
+4. Ejecutar sql/04_indices.sql            →  Crear los índices
 5. Ejecutar sql/05_consultas-optimizadas.sql  →  Capturar métricas DESPUÉS
-6. Ejecutar sql/06_stored_procedures.sql  →  Crear y probar los 3 SPs
+6. Ejecutar sql/06_stored_procedures.sql  →  Crear y probar los SPs
 ```
 
 ### Capturar planes de ejecución
 
 1. Abrir el script en SSMS
-2. Activar **Include Actual Execution Plan** con `Ctrl+M`
+2. Activar **Include Actual Execution Plan** 
 3. Ejecutar el script
 4. Pestaña **Messages** → copiar tiempos CPU, elapsed y logical reads
 5. Pestaña **Execution Plan** → clic derecho → *Save Execution Plan As…*
-6. Guardar en `evidencias/` con el nombre correspondiente
-
 ---
 
 ## Estructura de la base de datos
@@ -125,18 +101,6 @@ Conexión: `localhost,1433` · Usuario: `sa` · Contraseña: `TuPassword123!`
 | `ordenes` | Cabecera de cada transacción | 5 000 |
 | `detalle_orden` | Líneas de producto por orden | ~17 000 |
 | `pagos` | Transacciones de cobro | 5 000 |
-
-### Diagrama de relaciones
-
-```
-categorias (1) ──< productos (N)
-                        │
-                        └──< detalle_orden >──┐
-                                               │
-clientes (1) ──< ordenes (1) ──────────────────┘
-                    │
-                    └──< pagos
-```
 
 ### Limpiar y reiniciar datos
 
@@ -255,8 +219,7 @@ EXEC usp_top_productos
 
 ---
 
-### Consulta #1 — JOIN sin índice en FK + filtro fecha + ORDER BY
-
+### Consulta #1 
 | Métrica | Antes | Después | Δ |
 |---|---|---|---|
 | CPU (ms) | 93 | 31 | **−67 %** |
@@ -267,7 +230,7 @@ EXEC usp_top_productos
 
 ---
 
-### Consulta #2 — Subconsulta correlacionada → EXISTS
+### Consulta #2 
 
 | Métrica | Antes | Después | Δ |
 |---|---|---|---|
@@ -280,55 +243,43 @@ EXEC usp_top_productos
 
 ---
 
-### Consulta #3 — Múltiples JOINs sin índices en clave foránea
+### Consulta #3
 
-| Métrica | Antes | Después | Δ |
+| Métrica | Antes | Después |
 |---|---|---|---|
-| CPU (ms) | 173 | 31 | **−82 %** |
-| Elapsed (ms) | 173 | 31 | **−82 %** |
-| Logical reads ordenes | 407 | 67 | **−84 %** |
-| Logical reads detalle_orden | 6 452 | 5 222 | **−19 %** |
-| Logical reads productos | 1 811 206 | 200 077 | **−89 %** |
-| Logical reads clientes | 8 200 | 210 600 | ⚠️ ver nota |
-| Logical reads categorias | 2 200 | 22 000 | ⚠️ ver nota |
-| Logical reads total | **1 925 665** | **67 007** | **−96 %** |
-| Operación principal | 4× Hash Match + Sort | Nested Loop + Index Seek | ✅ |
-
-> **Nota:** El incremento en clientes y categorías es consecuencia del cambio
-> de Hash Match a Nested Loop. En lugar de un scan completo por tabla, el
-> optimizador realiza seeks puntuales por cada fila coincidente. El resultado
-> neto es una reducción del **96 %** en lecturas totales.
+| CPU (ms) | 173 | 31 |
+| Elapsed (ms) | 173 | 31 |
+| Logical reads ordenes | 407 | 67 |
+| Logical reads detalle_orden | 6 452 |
+| Logical reads productos | 1 811 206 |
+| Logical reads clientes | 8 200 | 210 600 |
+| Logical reads categorias | 2 200 | 22 000 |
+| Logical reads total | **1 925 665** | **67 007** |
 
 ---
 
-### Consulta #4 — LIKE con comodín inicial
+### Consulta #4 
 
-| Métrica | Antes | Después | Δ |
+| Métrica | Antes | Después |
 |---|---|---|---|
-| CPU (ms) | 289 | 93 | **−68 %** |
-| Elapsed (ms) | 3 012 | 1 205 | **−60 %** |
-| Logical reads productos | 17 591 | 9 154 | **−48 %** |
-| Logical reads categorias | 22 | 22 | Sin cambio |
-| Logical reads total | 17 793 | 9 399 | **−47 %** |
-| Operación principal | Clustered Index Scan + Hash Match | Filtered Index Scan + LIKE | ✅ |
+| CPU (ms) | 289 | 93 |
+| Elapsed (ms) | 3 012 | 1 205 |
+| Logical reads productos | 17 591 | 9 154 |
+| Logical reads categorias | 22 | 22 |
+| Logical reads total | 17 793 | 9 399 |
+
 
 ---
 
-### Consulta #5 — Agregación GROUP BY + ORDER BY sin índices
+### Consulta #5 
 
-| Métrica | Antes | Después | Δ |
+| Métrica | Antes | Después |
 |---|---|---|---|
-| CPU (ms) | 34 | 23 | **−32 %** |
-| Elapsed (ms) | 24 | 24 | Similar |
-| Logical reads ordenes | 4 013 | 1 296 | **−68 %** |
-| Logical reads clientes | 86 | 64 | **−26 %** |
-| Logical reads total | 4 819 | 1 947 | **−60 %** |
-| Operación principal | CI Scan + 2× Sort + Merge Join | Index Seek + Stream Aggregate | ✅ |
-
-> **Nota:** Los tiempos elapsed son similares porque el volumen de datos es
-> pequeño. La mejora real está en las lecturas lógicas (−60 %) y en el cambio
-> de operador: de 2 Sort operators a Stream Aggregate, lo que escala
-> favorablemente con millones de registros en producción.
+| CPU (ms) | 34 | 23 |
+| Elapsed (ms) | 24 | 24 |
+| Logical reads ordenes | 4 013 | 1 296 |
+| Logical reads clientes | 86 | 64 |
+| Logical reads total | 4 819 | 1 947 |
 
 ---
 
@@ -366,41 +317,6 @@ DROP INDEX IF EXISTS IX_clientes_ciudad_registro    ON clientes;
 
 ---
 
-## Estructura de ramas Git
-
-```
-main          ← versión estable y documentada
-└── wip       ← rama de desarrollo activa
-```
-
-### Mensajes de commit
-
-```bash
-git commit -m "init: project structure with docs, sql and evidencias folders"
-git commit -m "feat: add ecommerce_db schema with 6 tables and integrity constraints"
-git commit -m "feat: add seed script generating 200 clients, 5000 products and 17000 details"
-git commit -m "perf: add 5 slow queries with execution plan baseline and IO statistics"
-git commit -m "perf: add 11 optimized indexes — non-clustered, covering and filtered"
-git commit -m "perf: rewrite 5 slow queries with sargable predicates and explicit columns"
-git commit -m "feat: add 3 parameterized SPs with window functions and OFFSET/FETCH pagination"
-git commit -m "docs: add comparative optimization report with before/after real metrics"
-```
-
----
-
-## Criterios de evaluación
-
-| Criterio | Puntos | Archivos |
-|---|---|---|
-| Modelado y carga masiva | 15 | `01_schema.sql`, `02_seed.sql`, `docs/diccionario-datos.md` |
-| Análisis previo y planes | 20 | `03_consultas-lentas.sql`, `evidencias/plan-ejecucion-antes-*.png` |
-| Índices y reescritura | 25 | `04_indices.sql`, `05_consultas-optimizadas.sql` |
-| Stored Procedures | 15 | `06_stored_procedures.sql` |
-| Reporte comparativo | 10 | `docs/optimizacion-resultados.md` |
-| Documentación | 5 | `README.md`, `docs/` |
-| GitHub + ramas + commits | 10 | Repositorio público, rama `wip`, ≥ 8 commits descriptivos |
-
----
 
 ## Referencias
 
@@ -414,7 +330,7 @@ git commit -m "docs: add comparative optimization report with before/after real 
 
 ## Contacto
 
-Link del Repositorio: [optimizacion-bd-ecommerce](https://github.com/TU_USUARIO/optimizacion-bd-ecommerce)
+Link del Repositorio: [optimizacion-bd-ecommerce](https://github.com/joaquinzarates/optimizacion-bd-ecommerce)
 
 <p align="right">(<a href="#readme-top">Regresar al Inicio</a>)</p>
 
