@@ -4,7 +4,7 @@
 [![SSMS][ssms-shield]][ssms-url]
 [![License][license-shield]][license-url]
 
-# Optimización de Base de Datos — E-Commerce
+# Optimización de Base de Datos : E-Commerce
 
 Proyecto para validar los conocimientos obtenidos en el Track: Bases de Datos para Web, mediante la construcción, poblado y optimización de una base de datos de un e-commerce 
 
@@ -76,7 +76,7 @@ optimizacion-bd-ecommerce/
 2. Ejecutar sql/02_seed.sql    →  Generación de datos 
 3. Ejecutar sql/03_consultas-lentas.sql   →  Capturar métricas antes de la optimización
 4. Ejecutar sql/04_indices.sql            →  Crear los índices
-5. Ejecutar sql/05_consultas-optimizadas.sql  →  Capturar métricas DESPUÉS
+5. Ejecutar sql/05_consultas-optimizadas.sql  →  Capturar métricas después de la creación de los índices
 6. Ejecutar sql/06_stored_procedures.sql  →  Crear y probar los SPs
 ```
 
