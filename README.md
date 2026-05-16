@@ -50,10 +50,10 @@ optimizacion-bd-ecommerce/
 │   ├── 05_consultas-optimizadas.sql      # Consultas reescritas y optimizadas
 │   └── 06_stored_procedures.sql          # stored procedures parametrizados
 ├── evidencias/
-│   ├── plan-ejecucion-antes-1.png
-│   ├── plan-ejecucion-despues-1.png
-│   ├── statistics-io-comparacion.png
-│   └── stored-procedures-pruebas.png
+│   ├── plan-ejecucion-antes-1.png        #Captura de las métricas antes de la optimización
+│   ├── plan-ejecucion-despues-1.png      #Captura métricas después de la optimización
+│   ├── statistics-io-comparacion.png     #Captura de la compración de las métricas antes y después de la creación de los indices
+│   └── stored-procedures-pruebas.png     #Captura de los resultados de los SPs
 └── README.md
 ```
 
