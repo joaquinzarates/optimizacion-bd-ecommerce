@@ -239,47 +239,45 @@ EXEC usp_top_productos
 | Logical reads ordenes | 4 013 | 1 296 | **−68 %** |
 | Logical reads clientes | 86 | 64 | **−26 %** |
 | Logical reads total | 4 819 | 1 947 | **−60 %** |
-| Operación principal | Hash Match Semi Join + CI Scan | Index Seek + Semi Join | ✅ |
+
 
 ---
-
 ### Consulta #3
 
-| Métrica | Antes | Después |
-|---|---|---|---|
-| CPU (ms) | 173 | 31 |
-| Elapsed (ms) | 173 | 31 |
-| Logical reads ordenes | 407 | 67 |
-| Logical reads detalle_orden | 6 452 |
-| Logical reads productos | 1 811 206 |
-| Logical reads clientes | 8 200 | 210 600 |
-| Logical reads categorias | 2 200 | 22 000 |
-| Logical reads total | **1 925 665** | **67 007** |
+| Métrica                       | Antes       | Después    |
+|-------------------------------|-------------|------------|
+| CPU (ms)                      | 173         | 31         |
+| Elapsed (ms)                  | 173         | 31         |
+| Logical reads ordenes         | 407         | 67         |
+| Logical reads detalle_orden   | 6           | 452        |
+| Logical reads productos       | 1,811,206   |            |
+| Logical reads clientes        | 8,200       | 210,600    |
+| Logical reads categorias      | 2,200       | 22,000     |
+| Logical reads total           | **1,925,665** | **67,007** |
 
 ---
 
-### Consulta #4 
+### Consulta #4
 
-| Métrica | Antes | Después |
-|---|---|---|---|
-| CPU (ms) | 289 | 93 |
-| Elapsed (ms) | 3 012 | 1 205 |
-| Logical reads productos | 17 591 | 9 154 |
-| Logical reads categorias | 22 | 22 |
-| Logical reads total | 17 793 | 9 399 |
-
+| Métrica                       | Antes     | Después   |
+|-------------------------------|-----------|-----------|
+| CPU (ms)                      | 289       | 93        |
+| Elapsed (ms)                  | 3,012     | 1,205     |
+| Logical reads productos       | 17,591    | 9,154     |
+| Logical reads categorias      | 22        | 22        |
+| Logical reads total           | 17,793    | 9,399     |
 
 ---
 
-### Consulta #5 
+### Consulta #5
 
-| Métrica | Antes | Después |
-|---|---|---|---|
-| CPU (ms) | 34 | 23 |
-| Elapsed (ms) | 24 | 24 |
-| Logical reads ordenes | 4 013 | 1 296 |
-| Logical reads clientes | 86 | 64 |
-| Logical reads total | 4 819 | 1 947 |
+| Métrica                       | Antes     | Después   |
+|-------------------------------|-----------|-----------|
+| CPU (ms)                      | 34        | 23        |
+| Elapsed (ms)                  | 24        | 24        |
+| Logical reads ordenes         | 4,013     | 1,296     |
+| Logical reads clientes        | 86        | 64        |
+| Logical reads total           | 4,819     | 1,947     |
 
 ---
 
