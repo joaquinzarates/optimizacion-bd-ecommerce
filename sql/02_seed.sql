@@ -1,4 +1,4 @@
-USE bd_ecommerce
+USE bd_ecommerce_alt
 GO
  
 SET NOCOUNT ON;
@@ -116,64 +116,57 @@ BEGIN
 END
 GO
  
+
+
+
+
+
+
 SELECT * FROM clientes;
 GO
 
 
+DECLARE @nombres  NVARCHAR(MAX) = N'Carlos,María,José,Ana,Luis,Laura,Miguel,Sofía,Jorge,Elena,Pedro,Carmen,Andrés,Lucía,Roberto,Isabel,Francisco,Diana,Alejandro,Valentina';
+DECLARE @apellidos NVARCHAR(MAX) = N'García,Rodríguez,Martínez,López,González,Pérez,Sánchez,Ramírez,Torres,Flores,Rivera,Gómez,Díaz,Morales,Reyes,Cruz,Hernández,Jiménez,Ruiz,Vargas';
+DECLARE @ciudades  NVARCHAR(MAX) = N'CDMX,Guadalajara,Monterrey,Puebla,Tijuana,León,Juárez,Zapopan,Mérida,Querétaro,San Luis Potosí,Mexicali,Aguascalientes,Hermosillo,Chihuahua';
+ 
+DECLARE @n_arr  TABLE (idx INT IDENTITY, val NVARCHAR(100));
+DECLARE @a_arr  TABLE (idx INT IDENTITY, val NVARCHAR(100));
+DECLARE @c_arr  TABLE (idx INT IDENTITY, val NVARCHAR(100));
+ 
 
-DECLARE @oi        INT = 1;
-DECLARE @cli_count INT = (SELECT COUNT(*) FROM clientes);
-DECLARE @pro_count INT = (SELECT COUNT(*) FROM productos);
-DECLARE @estados   TABLE (idx INT IDENTITY, val NVARCHAR(30));
+INSERT INTO @n_arr (val) SELECT value FROM STRING_SPLIT(@nombres,   ',');
+INSERT INTO @a_arr (val) SELECT value FROM STRING_SPLIT(@apellidos, ',');
+INSERT INTO @c_arr (val) SELECT value FROM STRING_SPLIT(@ciudades,  ',');
  
-INSERT INTO @estados VALUES ('pendiente'),('confirmada'),('procesando'),
-                             ('enviada'),('entregada'),('cancelada');
+DECLARE @nc INT = (SELECT COUNT(*) FROM @n_arr);
+DECLARE @ac INT = (SELECT COUNT(*) FROM @a_arr);
+DECLARE @cc INT = (SELECT COUNT(*) FROM @c_arr);
  
-DECLARE @estado_cnt INT = (SELECT COUNT(*) FROM @estados);
- 
-WHILE @oi <= 5000
+DECLARE @ci INT = 1;
+WHILE @ci <= 200
 BEGIN
-    DECLARE @cli_id  INT      = CAST(RAND(CHECKSUM(NEWID())) * @cli_count AS INT) + 1;
-    DECLARE @est_val NVARCHAR(30) = (SELECT val FROM @estados
-                                     WHERE idx = CAST(RAND(CHECKSUM(NEWID())) * @estado_cnt AS INT) + 1);
-    DECLARE @fec_ord DATETIME2 = DATEADD(MINUTE,
-                                    -CAST(RAND(CHECKSUM(NEWID())) * 525600 AS INT),
-                                    SYSUTCDATETIME());
+    DECLARE @nom  NVARCHAR(100) = (SELECT val FROM @n_arr  WHERE idx = ((@ci - 1) % @nc) + 1);
+    DECLARE @ape  NVARCHAR(100) = (SELECT val FROM @a_arr  WHERE idx = ((@ci - 1) % @ac) + 1);
+    DECLARE @ciu  NVARCHAR(100) = (SELECT val FROM @c_arr  WHERE idx = ((@ci - 1) % @cc) + 1);
+    DECLARE @correo NVARCHAR(200) = LOWER(@nom) + '.' + LOWER(@ape) + CAST(@ci AS NVARCHAR) + N'@correo.com';
+    DECLARE @tel  NVARCHAR(20) = N'+52 55 ' + RIGHT('0000' + CAST(CAST(RAND(CHECKSUM(NEWID()))*9999 AS INT) AS NVARCHAR),4)
+                                            + N' ' + RIGHT('0000' + CAST(CAST(RAND(CHECKSUM(NEWID()))*9999 AS INT) AS NVARCHAR),4);
  
-    INSERT INTO ordenes (cliente_id, fecha, estado, subtotal, impuestos, total)
-    VALUES (@cli_id, @fec_ord, @est_val, 0, 0, 0);
+    INSERT INTO clientes (nombre, apellido, correo, telefono, fecha_registro, ciudad)
+    VALUES (
+        @nom, @ape, @correo, @tel,
+        DATEADD(DAY, -CAST(RAND(CHECKSUM(NEWID())) * 1095 AS INT), SYSUTCDATETIME()),
+        @ciu
+    );
  
-    DECLARE @ord_id INT = SCOPE_IDENTITY();
- 
-    DECLARE @lineas INT = CAST(RAND(CHECKSUM(NEWID())) * 4 AS INT) + 2;
-    DECLARE @li     INT = 1;
-    DECLARE @sub_total DECIMAL(12,2) = 0;
- 
-    WHILE @li <= @lineas
-    BEGIN
-        DECLARE @prod_id  INT            = CAST(RAND(CHECKSUM(NEWID())) * @pro_count AS INT) + 1;
-        DECLARE @qty      INT            = CAST(RAND(CHECKSUM(NEWID())) * 9 AS INT) + 1;
-        DECLARE @p_unit   DECIMAL(10,2)  = (SELECT precio FROM productos WHERE id = @prod_id);
-        DECLARE @lin_sub  DECIMAL(12,2)  = @qty * @p_unit;
- 
-        INSERT INTO detalle_orden (orden_id, producto_id, cantidad, precio_unitario, subtotal)
-        VALUES (@ord_id, @prod_id, @qty, @p_unit, @lin_sub);
- 
-        SET @sub_total += @lin_sub;
-        SET @li += 1;
-    END
- 
-    DECLARE @imp   DECIMAL(12,2) = ROUND(@sub_total * 0.16, 2);
-    DECLARE @tot   DECIMAL(12,2) = @sub_total + @imp;
- 
-    UPDATE ordenes
-    SET subtotal = @sub_total, impuestos = @imp, total = @tot
-    WHERE id = @ord_id;
- 
-    SET @oi += 1;
+    SET @ci += 1;
 END
 GO
  
+
+
+
 SELECT * FROM ordenes;
 GO
 SELECT * FROM detalle_orden;
