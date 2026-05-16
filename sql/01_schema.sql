@@ -1,21 +1,16 @@
-use  primeraDB;
-GO
-drop DATABASE bd_ecommerce
-GO
- 
-IF EXISTS (SELECT name FROM sys.databases WHERE name = 'bd_ecommerce')
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'bd_ecommerce_alt')
 BEGIN
-    ALTER DATABASE bd_ecommerce SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE bd_ecommerce;
+    ALTER DATABASE bd_ecommerce_alt_alt SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE bd_ecommerce_alt;
 END
 GO
  
 
-CREATE DATABASE bd_ecommerce
+CREATE DATABASE bd_ecommerce_alt
     COLLATE SQL_Latin1_General_CP1_CI_AS;
 GO
  
-USE bd_ecommerce;
+USE bd_ecommerce_alt;
 GO
 
 CREATE TABLE categorias (
