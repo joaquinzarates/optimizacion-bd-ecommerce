@@ -6,7 +6,7 @@
 
 # Optimización de Base de Datos — E-Commerce
 
-Diseño, poblado y optimización de una base de datos relacional para una tienda en línea, implementada en **Microsoft SQL Server 2019+**. El proyecto demuestra técnicas de análisis de planes de ejecución, indexación avanzada (clustered, non-clustered, covering y filtered) y reescritura de consultas con comparación cuantitativa de rendimiento antes y después de las optimizaciones.
+Proyecto para validar los conocimientos obtenidos en el Track: Bases de Datos para Web, mediante la construcción, poblado y optimización de una base de datos de un e-commerce 
 
 <details>
   <summary>Tabla de contenidos</summary>
