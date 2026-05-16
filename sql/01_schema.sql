@@ -1,4 +1,6 @@
-USE master;
+use  primeraDB;
+GO
+drop DATABASE bd_ecommerce
 GO
  
 IF EXISTS (SELECT name FROM sys.databases WHERE name = 'bd_ecommerce')
