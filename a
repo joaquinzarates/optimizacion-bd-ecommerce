@@ -1,0 +1,6 @@
+[35msql/01_schema.sql[m[36m:[m[32m3[m[36m:[m    ALTER [1;31mDATABASE[m bd_ecommerce_alt SET SINGLE_[1;31mUSE[mR WITH ROLLBACK IMMEDIATE;
+[35msql/01_schema.sql[m[36m:[m[32m4[m[36m:[m    DROP [1;31mDATABASE[m bd_ecommerce_alt;
+[35msql/01_schema.sql[m[36m:[m[32m9[m[36m:[mCREATE [1;31mDATABASE[m bd_ecommerce_alt
+[35msql/01_schema.sql[m[36m:[m[32m13[m[36m:[m[1;31mUSE[m bd_ecommerce_alt;
+[35msql/03_consultas-lentas.sql[m[36m:[m[32m1[m[36m:[m[1;31mUSE[m bd_ecommerce;
+[35msql/06_stored_procedures.sql[m[36m:[m[32m1[m[36m:[m[1;31mUSE[m bd_ecommerce_alt;

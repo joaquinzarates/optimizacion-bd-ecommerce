@@ -1,6 +1,6 @@
 IF EXISTS (SELECT name FROM sys.databases WHERE name = 'bd_ecommerce_alt')
 BEGIN
-    ALTER DATABASE bd_ecommerce_alt_alt SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    ALTER DATABASE bd_ecommerce_alt SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE bd_ecommerce_alt;
 END
 GO
