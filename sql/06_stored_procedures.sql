@@ -1,16 +1,12 @@
 USE bd_ecommerce_alt;
 GO
 
-
-USE ecommerce_db;
-GO
-
 CREATE OR ALTER PROCEDURE usp_buscar_productos
     @categoria_id  INT            = NULL,
     @precio_min    DECIMAL(10,2)  = NULL,
     @precio_max    DECIMAL(10,2)  = NULL,
     @texto         NVARCHAR(200)  = NULL,
-    @pagina        INT            = 1,      -- 1-based
+    @pagina        INT            = 1,      
     @tam_pagina    INT            = 20
 AS
 BEGIN
@@ -25,7 +21,6 @@ BEGIN
     DECLARE @like NVARCHAR(202) = NULL;
     IF @texto IS NOT NULL AND LEN(LTRIM(RTRIM(@texto))) > 0
         SET @like = N'%' + LTRIM(RTRIM(@texto)) + N'%';
-
     SELECT COUNT_BIG(*) AS total_registros
     FROM productos p
     WHERE p.activo = 1
@@ -138,5 +133,102 @@ BEGIN
         END AS segmento_cliente
     FROM ranking_clientes
     ORDER BY posicion_global;
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE usp_top_productos
+    @top_n         INT           = 10,
+    @fecha_inicio  DATETIME2     = NULL,
+    @fecha_fin     DATETIME2     = NULL,
+    @categoria_id  INT           = NULL,
+    @metrica       NVARCHAR(20)  = N'monto'  
+AS
+BEGIN
+    SET NOCOUNT ON;
+ 
+ 
+    IF @top_n IS NULL OR @top_n < 1   SET @top_n = 10;
+    IF @top_n > 500                    SET @top_n = 500;
+    IF @fecha_inicio IS NULL
+        SET @fecha_inicio = DATEFROMPARTS(YEAR(SYSUTCDATETIME()), 1, 1);
+    IF @fecha_fin IS NULL
+        SET @fecha_fin = SYSUTCDATETIME();
+    IF @metrica NOT IN (N'monto', N'cantidad', N'ordenes')
+        SET @metrica = N'monto';
+ 
+    ;WITH ventas AS (
+        SELECT
+            p.id                        AS producto_id,
+            p.sku,
+            p.nombre                    AS producto,
+            cat.nombre                  AS categoria,
+            p.precio                    AS precio_actual,
+            p.activo,
+            COUNT(DISTINCT do.orden_id) AS total_ordenes,
+            SUM(do.cantidad)            AS total_unidades,
+            SUM(do.subtotal)            AS monto_vendido,
+            AVG(do.precio_unitario)     AS precio_promedio_venta
+        FROM productos      p
+            JOIN categorias    cat ON cat.id       = p.categoria_id
+            JOIN detalle_orden do  ON do.producto_id = p.id
+            JOIN ordenes       o   ON o.id         = do.orden_id
+        WHERE o.fecha  >= @fecha_inicio
+          AND o.fecha  <  DATEADD(DAY, 1, @fecha_fin)
+          AND o.estado IN ('entregada', 'enviada', 'confirmada', 'procesando')
+          AND (@categoria_id IS NULL OR p.categoria_id = @categoria_id)
+        GROUP BY p.id, p.sku, p.nombre, cat.nombre, p.precio, p.activo
+    ),
+    ranking AS (
+        SELECT
+            *,
+          
+            ROW_NUMBER() OVER (
+                ORDER BY
+                    CASE @metrica
+                        WHEN N'monto'    THEN monto_vendido
+                        WHEN N'cantidad' THEN CAST(total_unidades AS DECIMAL(18,2))
+                        WHEN N'ordenes'  THEN CAST(total_ordenes  AS DECIMAL(18,2))
+                    END DESC
+            ) AS posicion,
+            RANK() OVER (
+                ORDER BY
+                    CASE @metrica
+                        WHEN N'monto'    THEN monto_vendido
+                        WHEN N'cantidad' THEN CAST(total_unidades AS DECIMAL(18,2))
+                        WHEN N'ordenes'  THEN CAST(total_ordenes  AS DECIMAL(18,2))
+                    END DESC
+            ) AS rank_con_empates,
+            RANK() OVER (
+                PARTITION BY categoria
+                ORDER BY monto_vendido DESC
+            ) AS rank_en_categoria,
+            ROUND(
+                100.0 * monto_vendido
+                / NULLIF(SUM(monto_vendido) OVER (), 0),
+                2
+            ) AS pct_del_total
+        FROM ventas
+    )
+    SELECT TOP (@top_n)
+        posicion,
+        rank_con_empates,
+        rank_en_categoria,
+        producto_id,
+        sku,
+        producto,
+        categoria,
+        precio_actual,
+        activo,
+        total_ordenes,
+        total_unidades,
+        monto_vendido,
+        precio_promedio_venta,
+        pct_del_total,
+        @metrica                AS metrica_ordenamiento,
+        @fecha_inicio           AS periodo_inicio,
+        @fecha_fin              AS periodo_fin
+    FROM ranking
+    ORDER BY posicion;
 END;
 GO
