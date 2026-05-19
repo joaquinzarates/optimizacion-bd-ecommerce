@@ -1,4 +1,4 @@
-use bd_ecommerce;
+USE bd_ecommerce_alt;
 GO
 
 SET STATISTICS IO  ON;
