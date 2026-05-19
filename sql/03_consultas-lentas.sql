@@ -1,4 +1,16 @@
-USE bd_ecommerce_alt;
+use bd_ecommerce;
+GO
+
+SET STATISTICS IO  ON;
+SET STATISTICS TIME ON;
+GO
+
+
+
+SELECT *
+FROM productos
+WHERE YEAR(fecha_creacion) = YEAR(GETDATE()) - 1
+  AND activo = 1;
 GO
 
 
